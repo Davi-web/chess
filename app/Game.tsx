@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/card';
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Chessboard } from 'react-chessboard';
-import { Chess, Color, Move, Square, Piece } from 'chess.js';
+import { Chess, Color, Move, Square, Piece, PieceSymbol } from 'chess.js';
 import socket from './socket';
 import {
   BoardOrientation,
@@ -48,10 +48,32 @@ interface RightClickedSquares {
 }
 
 interface History {
-  piece: Piece;
+  piece: {
+    type: PieceSymbol | null;
+    color: Color | null;
+  };
   fen: string;
+  msg: string;
 }
 const TIME_TOTAL = 30; // 1 minute
+const mapSymbolToPiece = (symbol: PieceSymbol) => {
+  switch (symbol) {
+    case 'p':
+      return 'Pawn';
+    case 'n':
+      return 'Knight';
+    case 'b':
+      return 'Bishop';
+    case 'r':
+      return 'Rook';
+    case 'q':
+      return 'Queen';
+    case 'k':
+      return 'King';
+    default:
+      return '';
+  }
+};
 
 const Game: React.FC<GameProps> = ({
   players,
@@ -75,6 +97,7 @@ const Game: React.FC<GameProps> = ({
   const [p1TimeRemaining, setP1TimeRemaining] = useState(100);
   const [p2TimeRemaining, setP2TimeRemaining] = useState(100);
   const modal = useCustomDialogModal();
+  const [showAnimation, setShowAnimation] = useState(false);
 
   const makeAMove = useCallback(
     (moveData: {
@@ -98,6 +121,12 @@ const Game: React.FC<GameProps> = ({
               color: chess.get(moveData.to)?.color,
             },
             fen: chess.fen(),
+            msg: `${
+              chess.get(moveData.to)?.color === 'w' ? 'White' : 'Black'
+            } moved ${mapSymbolToPiece(chess.get(moveData.to)?.type)} to ${
+              moveData.to
+            }
+            `,
           },
         ]);
         if (chess.isCheck()) {
@@ -247,6 +276,8 @@ const Game: React.FC<GameProps> = ({
 
   function onSquareclick(square: SquareType) {
     if (players.length < 2) return;
+    // Return if the player is not the current player
+    if (chess.turn() !== orientation[0]) return;
 
     if (square === moveFrom) {
       setMoveFrom(null);
@@ -426,11 +457,26 @@ const Game: React.FC<GameProps> = ({
         chess.turn(),
         (p1time: number, p2time: number) => {
           if (p1time <= 0 || p2time <= 0) {
-            setOver('Time is up');
-            modal.onOpen();
+            const updatedFen = chess.fen().split(' ');
+            updatedFen[1] = chess.turn() === 'w' ? 'b' : 'w';
+            chess.load(updatedFen.join(' '));
+            setFen(chess.fen());
+            setHistory((prev) => [
+              ...prev,
+              {
+                piece: {
+                  type: null,
+                  color: chess.turn(),
+                },
+                fen: chess.fen(),
+                msg: `Skipped ${
+                  chess.turn() === 'w' ? 'black' : 'white'
+                }'s turn`,
+              },
+            ]);
             return;
           }
-          console.log('get time remaining callback', p1time, p2time);
+          // console.log('get time remaining callback', p1time, p2time);
           setP1TimeRemaining(p1time);
           setP2TimeRemaining(p2time);
         }
@@ -450,6 +496,14 @@ const Game: React.FC<GameProps> = ({
     };
   }, [chess.turn(), players, roomId]);
 
+  useEffect(() => {
+    if (players.length < 2) return;
+    if (history.length === 0) return;
+    if (history[history.length - 1].msg) {
+      toast(`Move #${history.length}: ${history[history.length - 1].msg}`);
+    }
+  }, [history, players]);
+
   // useEffect(() => {
   //   // Set up event listener for 'timeRemaining' event emitted by the server
   //   const handleTimeRemaining = (remaining: number) => {
@@ -465,27 +519,41 @@ const Game: React.FC<GameProps> = ({
 
   // Game component returned jsx
   return (
-    <div className="flex flex-col">
+    <div className="h-full w-full overflow-clip">
       <Card>
         <CardHeader>
-          <CardTitle>Chess with a Twist</CardTitle>
+          <CardTitle>
+            Room ID:{' '}
+            <span className="inline-block">
+              {room}{' '}
+              <Clipboard
+                onClick={copyRoomId}
+                className="cursor-pointer inline-block"
+              />
+            </span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <CardTitle className=" flex">
-            Room ID:{' '}
-            <div className="flex">
-              {room}{' '}
-              <Clipboard onClick={copyRoomId} className="cursor-pointer" />
-            </div>
+            {chess.turn() === orientation[0] ? 'Your' : 'Opponent'} Turn
           </CardTitle>
           <CardDescription>
             <div className="flex flex-row pt-2"></div>
           </CardDescription>
+          <CardDescription>Players</CardDescription>
+          {players.map((p) => (
+            <div key={p.id}>
+              <h1>
+                {p.username} - {p.rating}
+              </h1>
+            </div>
+          ))}
         </CardContent>
-
-        <CardFooter>
-          <CardDescription>
-            {players.length > 1 ? (
+      </Card>
+      <div className="sm:pt-2 flex flex-col w-full  sm:flex-row">
+        {players.length > 1 && (
+          <Card className="h-fit justify-center flex w-88 sm:w-96   m-2">
+            <CardContent>
               <PlayerTurnTimer
                 p1={players[0]}
                 p2={players[1]}
@@ -493,13 +561,9 @@ const Game: React.FC<GameProps> = ({
                 p2TimeRemaining={p2TimeRemaining}
                 timeTotal={TIME_TOTAL}
               />
-            ) : (
-              'Waiting for opponent to join'
-            )}
-          </CardDescription>
-        </CardFooter>
-      </Card>
-      <div className="sm:pt-2 flex flex-col  sm:flex-row">
+            </CardContent>
+          </Card>
+        )}
         <div className="w-88 h-88 sm:w-[600px] sm:h-[600px] flex m-2">
           <Chessboard
             position={fen}
@@ -525,20 +589,21 @@ const Game: React.FC<GameProps> = ({
             showPromotionDialog={showPromotionDialog}
           />
         </div>
-        {players.length > 0 && (
-          <Card className="h-full justify-center flex w-88 sm:w-96  m-2">
-            <CardContent>
-              <CardDescription>Players</CardDescription>
-              {players.map((p) => (
-                <div key={p.id}>
-                  <h1>
-                    {p.username} - {p.rating}
-                  </h1>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+
+        {/* <div
+          id="history"
+          className="w-88 sm:w-96 h-32 sm:h-5/6 space-y-2 overflow-y-scroll"
+        >
+          {history.map((h, i) => (
+            <Card key={i} className="h-fit w-full">
+              <CardContent className="flex justify-center p-3">
+                <CardDescription>
+                  Move {i}: {h.msg}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          ))}
+        </div> */}
       </div>
       <CustomDialogModal
         modal={modal}
