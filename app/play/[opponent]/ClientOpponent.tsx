@@ -48,7 +48,7 @@ export default function ClientOpponent({
   }, []);
   console.log(players);
   return (
-    <div>
+    <div className="w-full h-full">
       {/* <Button
         onClick={() => {
           signIn();
