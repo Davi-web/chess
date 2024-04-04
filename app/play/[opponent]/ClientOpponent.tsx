@@ -46,7 +46,7 @@ export default function ClientOpponent({
       setPlayers(roomData.players);
     });
   }, []);
-  console.log(players);
+
   return (
     <div className="w-full h-full overflow-y-clip">
       {/* <Button
@@ -62,7 +62,7 @@ export default function ClientOpponent({
         <Game
           room={room}
           orientation={orientation}
-          username={user.name!}
+          username={username!}
           players={players}
           // the cleanup function will be used by Game to reset the state when a game is over
           cleanup={cleanup}
