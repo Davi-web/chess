@@ -370,6 +370,7 @@ const Game: React.FC<GameProps> = ({
     socket.emit('closeRoom', { roomId: room });
     cleanup();
     modal.onClose();
+    window.location.reload();
   }
 
   useEffect(() => {
@@ -398,6 +399,7 @@ const Game: React.FC<GameProps> = ({
       if (roomId === room) {
         cleanup();
         modal.onClose();
+        window.location.reload();
       }
     });
     return () => {
