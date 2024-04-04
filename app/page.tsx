@@ -1,7 +1,7 @@
 import PlayButton from '@/components/buttons/PlayButton';
 import { OpponentType } from '@/enums';
 import { options } from './api/auth/[...nextauth]/options';
-import getCurrentUser, { getSession } from './actions/getCurrentUser';
+import getCurrentUser, { getSession } from '../accessors/getCurrentUser';
 
 export interface Player {
   id: string;
@@ -14,6 +14,7 @@ export default async function Home() {
   const user = await getCurrentUser();
   console.log(session);
   console.log(user);
+
   return (
     <div className="h-screen">
       <h1 className="text-4xl font-bold text-center">Chess</h1>

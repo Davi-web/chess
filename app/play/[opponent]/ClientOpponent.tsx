@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { signIn, signOut } from 'next-auth/react';
 import { User } from '@prisma/client';
 import { OpponentType } from '@/enums';
-import { getUserById } from '@/app/actions/getCurrentUser';
+import { getUserById } from '@/accessors/getCurrentUser';
 interface ClientOpponentProps {
   user: User;
   opponent: OpponentType;
@@ -48,7 +48,7 @@ export default function ClientOpponent({
   }, []);
   console.log(players);
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full overflow-y-clip">
       {/* <Button
         onClick={() => {
           signIn();
@@ -56,13 +56,7 @@ export default function ClientOpponent({
       >
         Sign In
       </Button>
-      <Button
-        onClick={() => {
-          signOut();
-        }}
-      >
-        Sign Out
-      </Button> */}
+     */}
 
       {room ? (
         <Game
