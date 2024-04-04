@@ -24,6 +24,7 @@ import { Player } from './page';
 import CustomDialogModal from '@/components/modals/customDialogModal';
 import useCustomDialogModal from '@/zustand/useCustomDialogModal';
 import PlayerTurnTimer from '@/components/PlayerTurnTimer';
+import axios from 'axios';
 
 interface GameProps {
   players: Player[];
@@ -48,10 +49,8 @@ interface RightClickedSquares {
 }
 
 interface History {
-  piece: {
-    type: PieceSymbol | null;
-    color: Color | null;
-  };
+  pieceType: PieceSymbol | null;
+  pieceColor: Color | null;
   fen: string;
   msg: string;
 }
@@ -116,17 +115,14 @@ const Game: React.FC<GameProps> = ({
         setHistory((prev) => [
           ...prev,
           {
-            piece: {
-              type: chess.get(moveData.to)?.type,
-              color: chess.get(moveData.to)?.color,
-            },
+            pieceType: chess.get(moveData.to)?.type,
+            pieceColor: chess.get(moveData.to)?.color,
             fen: chess.fen(),
             msg: `${
               chess.get(moveData.to)?.color === 'w' ? 'White' : 'Black'
             } moved ${mapSymbolToPiece(chess.get(moveData.to)?.type)} to ${
               moveData.to
-            }
-            `,
+            }`,
           },
         ]);
         if (chess.isCheck()) {
@@ -148,11 +144,10 @@ const Game: React.FC<GameProps> = ({
           // check if move led to "game over"
           if (chess.isCheckmate()) {
             // if reason for game over is a checkmate
-            // Set message to checkmate.
+            // Set message to checkmate. The winner is determined by checking for which side made the last move
             setOver(
               `Checkmate! ${chess.turn() === 'w' ? 'black' : 'white'} wins!`
             );
-            modal.onOpen();
             // The winner is determined by checking for which side made the last move
           } else if (chess.isDraw()) {
             // if it is a draw
@@ -160,6 +155,7 @@ const Game: React.FC<GameProps> = ({
           } else {
             setOver('Game over');
           }
+          modal.onOpen();
         }
 
         return result;
@@ -448,6 +444,7 @@ const Game: React.FC<GameProps> = ({
   // know whos turn it is with chess.turn()
   useEffect(() => {
     if (players.length < 2) return;
+    if (over) return;
     const interval = setInterval(() => {
       socket.emit(
         'getTimeRemaining',
@@ -457,6 +454,7 @@ const Game: React.FC<GameProps> = ({
         chess.turn(),
         (p1time: number, p2time: number) => {
           if (p1time <= 0 || p2time <= 0) {
+            // We will flip the turn to go to the next player
             const updatedFen = chess.fen().split(' ');
             updatedFen[1] = chess.turn() === 'w' ? 'b' : 'w';
             chess.load(updatedFen.join(' '));
@@ -464,10 +462,8 @@ const Game: React.FC<GameProps> = ({
             setHistory((prev) => [
               ...prev,
               {
-                piece: {
-                  type: null,
-                  color: chess.turn(),
-                },
+                pieceType: null,
+                pieceColor: null,
                 fen: chess.fen(),
                 msg: `Skipped ${
                   chess.turn() === 'w' ? 'black' : 'white'
@@ -483,7 +479,7 @@ const Game: React.FC<GameProps> = ({
       );
     }, 1000);
     return () => clearInterval(interval);
-  }, [players, chess, roomId, modal]);
+  }, [players, chess, roomId, modal, over, fen]);
   useEffect(() => {
     if (players.length < 2) return;
     socket.emit(
@@ -503,6 +499,28 @@ const Game: React.FC<GameProps> = ({
       toast(`Move #${history.length}: ${history[history.length - 1].msg}`);
     }
   }, [history, players]);
+
+  useEffect(() => {
+    if (over) {
+      const winner = over.includes('white') ? players[0].id : players[1].id;
+      // only post if you are the winner
+      if (winner === players.find((p) => p.username === username)?.id) {
+        const postData = {
+          moves: history.map((h) => h.fen),
+          msgs: history.map((h) => h.msg),
+          result: over,
+          playerIds: players.map((p) => p.id),
+          draw: over === 'Draw',
+        };
+        console.log('posting data', postData);
+
+        axios
+          .post('/api/chess', postData)
+          .then((res) => console.log(res.data))
+          .catch((e) => console.log(e));
+      }
+    }
+  }, [over]);
 
   // useEffect(() => {
   //   // Set up event listener for 'timeRemaining' event emitted by the server
@@ -552,7 +570,7 @@ const Game: React.FC<GameProps> = ({
       </Card>
       <div className="sm:pt-2 flex flex-col w-full  sm:flex-row">
         {players.length > 1 && (
-          <Card className="h-fit justify-center flex w-88 sm:w-96   m-2">
+          <Card className="h-fit justify-center flex w-88 sm:w-96  m-2">
             <CardContent>
               <PlayerTurnTimer
                 p1={players[0]}

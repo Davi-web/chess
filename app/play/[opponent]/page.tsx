@@ -1,4 +1,4 @@
-import getCurrentUser from '@/app/actions/getCurrentUser';
+import getCurrentUser from '@/accessors/getCurrentUser';
 import ClientOpponent from './ClientOpponent';
 import { redirect } from 'next/navigation';
 import { getSession } from 'next-auth/react';
