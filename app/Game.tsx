@@ -31,6 +31,7 @@ interface GameProps {
   username: string;
   room: string;
   orientation: BoardOrientation;
+  currUserId: string;
   cleanup: () => void;
   roomId: string;
 }
@@ -79,6 +80,7 @@ const Game: React.FC<GameProps> = ({
   username,
   room,
   orientation,
+  currUserId,
   cleanup,
   roomId,
 }) => {
@@ -542,43 +544,41 @@ const Game: React.FC<GameProps> = ({
     <div className="h-full w-full overflow-clip">
       <Card>
         <CardHeader>
-          <CardTitle>
-            Room ID:{' '}
-            <span className="inline-block">
-              {room}{' '}
-              <Clipboard
-                onClick={copyRoomId}
-                className="cursor-pointer inline-block"
-              />
-            </span>
-          </CardTitle>
+          <CardTitle></CardTitle>
         </CardHeader>
         <CardContent>
-          <CardTitle className=" flex">
-            {chess.turn() === orientation[0] ? 'Your' : 'Opponent'} Turn
-          </CardTitle>
-          <CardDescription>
-            <div className="flex flex-row pt-2"></div>
-          </CardDescription>
-          <CardDescription>Players</CardDescription>
-          {players.map((p) => (
-            <div key={p.id}>
-              <h1>
-                {p.username} - {p.rating}
-              </h1>
-            </div>
-          ))}
+          Room ID:{' '}
+          <span className="inline-block">
+            {room}{' '}
+            <Clipboard
+              onClick={copyRoomId}
+              className="cursor-pointer inline-block"
+            />
+          </span>
         </CardContent>
       </Card>
       <div className="sm:pt-2 flex flex-col w-full  sm:flex-row">
         {players.length > 1 && (
-          <Card className="h-fit justify-center flex w-88 sm:w-96  m-2">
+          <Card className="h-full justify-center flex w-88 sm:w-96  m-2">
             <CardContent>
+              <CardTitle>
+                {chess.turn() === orientation[0] ? 'Your' : 'Opponent'} Turn
+              </CardTitle>
+
+              <CardDescription>Players</CardDescription>
               <PlayerTurnTimer
-                p1={players[0]}
-                p2={players[1]}
-                p1TimeRemaining={p1TimeRemaining}
-                p2TimeRemaining={p2TimeRemaining}
+                p1={currUserId === players[0].id ? players[0] : players[1]}
+                p2={currUserId === players[0].id ? players[1] : players[0]}
+                p1TimeRemaining={
+                  currUserId === players[0].id
+                    ? p1TimeRemaining
+                    : p2TimeRemaining
+                }
+                p2TimeRemaining={
+                  currUserId === players[0].id
+                    ? p2TimeRemaining
+                    : p1TimeRemaining
+                }
                 timeTotal={TIME_TOTAL}
               />
             </CardContent>

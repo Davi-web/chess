@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { signIn, signOut } from 'next-auth/react';
 import { User } from '@prisma/client';
 import { OpponentType } from '@/enums';
-import { getUserById } from '@/accessors/getCurrentUser';
+import { getUserById } from '@/accessors/prsimaAccessors';
 interface ClientOpponentProps {
   user: User;
   opponent: OpponentType;
@@ -64,6 +64,7 @@ export default function ClientOpponent({
           orientation={orientation}
           username={username!}
           players={players}
+          currUserId={user.id}
           // the cleanup function will be used by Game to reset the state when a game is over
           cleanup={cleanup}
           roomId={room}

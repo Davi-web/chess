@@ -18,7 +18,6 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   email          String?   @unique
-  username       String?   @unique
   name           String?
   emailVerified  DateTime?
   image          String?
@@ -33,8 +32,6 @@ model User {
   gamesDrawn     Int?      @db.Int
   // gameIds        String[]  @db.ObjectId
   // games          Game[]    @relation(fields: [gameIds], references: [id])
-  Wins           Game[]    @relation("Wins")
-  Losses         Game[]    @relation("Losses")
 }
 
 model Account {
@@ -71,9 +68,9 @@ model Game {
   msgs      String[]
   result    String
 
-  winner   User?   @relation(fields: [winnerId], references: [id], name: "Wins")
-  winnerId String? @db.ObjectId
-  loser    User?   @relation(fields: [loserId], references: [id], name: "Losses")
-  loserId  String? @db.ObjectId
-  draw     Boolean
+  winnerId   String? @db.ObjectId
+  winnerName String?
+  loserId    String? @db.ObjectId
+  loserName  String?
+  draw       Boolean
 }

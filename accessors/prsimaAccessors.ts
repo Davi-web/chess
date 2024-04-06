@@ -1,8 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { options } from '@/app/api/auth/[...nextauth]/options';
 import prisma from '@/lib/prismadb';
-import { useSession } from 'next-auth/react';
-import { Player } from '@/app/page';
+
 export async function getSession() {
   const session = await getServerSession(options);
   return session;
@@ -49,6 +48,13 @@ export function getGamesByPlayerId(id: string) {
           loserId: id,
         },
       ],
+    },
+  });
+}
+export function getGameById(gameId: string) {
+  return prisma.game.findUnique({
+    where: {
+      id: gameId,
     },
   });
 }
