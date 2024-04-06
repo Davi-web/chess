@@ -1,13 +1,14 @@
 import PlayButton from '@/components/buttons/PlayButton';
 import { OpponentType } from '@/enums';
 import { options } from './api/auth/[...nextauth]/options';
-import getCurrentUser, { getSession } from '../accessors/getCurrentUser';
+import getCurrentUser, { getSession } from '../accessors/prsimaAccessors';
 
 export interface Player {
   id: string;
   socketId: string;
   username: string;
   rating: number;
+  imageUrl: string;
 }
 export default async function Home() {
   const session = await getSession();

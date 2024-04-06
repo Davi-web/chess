@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ userImg, userId }) => {
   return (
     <div
       id="header"
-      className="w-screen flex flex-row justify-end p-2 space-x-4"
+      className="w-screen flex flex-row justify-end p-2 space-x-4 bg-secondary"
     >
       <div>
         <h1 className="text-4xl font-bold text-center">Chess</h1>

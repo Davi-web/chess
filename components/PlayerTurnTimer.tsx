@@ -4,6 +4,9 @@ import { useState, useEffect, FC } from 'react';
 import socket from '@/app/socket';
 import { Progress } from '@/components/ui/progress';
 import { Player } from '@/app/page';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+import { cn } from '@/lib/utils';
 interface PlayerTurnTimerProps {
   p1: Player;
   p2: Player;
@@ -57,26 +60,46 @@ const PlayerTurnTimer: FC<PlayerTurnTimerProps> = ({
       : p2TimeRemaining > oneThird
       ? 'bg-yellow-400'
       : 'bg-red-400';
-  console.log(p1ConditionalProgress, p2ConditionalProgress);
+
   return (
-    <div className="flex w-full h-full gap-4">
-      <div id="p1-timer" className="flex flex-col ">
-        {p1.username} Timer:{' '}
-        <span
-          className={`text-lg font-bold transition-colors duration-300 ${p1ConditionalText}`}
-        >
-          {p1TimeRemaining} seconds
-        </span>
+    <div className="flex flex-col w-full justify-between  gap-4">
+      <div id="p1-timer" className={cn()}>
+        <div className="flex">
+          <Avatar>
+            <AvatarImage src={p1.imageUrl} />
+            <AvatarFallback>{p1.username[0]}</AvatarFallback>
+          </Avatar>
+          <div
+            className={cn(
+              `text-lg font-bold transition-colors duration-300`,
+              p1ConditionalText
+            )}
+          >
+            <p>{p1TimeRemaining} seconds</p>
+          </div>
+        </div>
+
         <Progress
           value={p1TimeRemainingPercentage}
           fill={p1ConditionalProgress}
         />
       </div>
-      <div id="p2-timer" className="flex flex-col ">
-        {p2.username} Timer:{' '}
-        <span className={`text-lg font-bold ${p2ConditionalText}`}>
-          {p2TimeRemaining} seconds
-        </span>
+      <div id="p2-timer" className={cn()}>
+        <div className="flex">
+          <Avatar>
+            <AvatarImage src={p2.imageUrl} />
+            <AvatarFallback>{p2.username[0]}</AvatarFallback>
+          </Avatar>
+          <div
+            className={cn(
+              `text-lg font-bold transition-colors duration-300`,
+              p2ConditionalText
+            )}
+          >
+            <p>{p2TimeRemaining} seconds</p>
+          </div>
+        </div>
+
         <Progress
           value={p2TimeRemainingPercentage}
           fill={p2ConditionalProgress}

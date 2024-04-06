@@ -1,8 +1,9 @@
 import getCurrentUser, {
   getUserById,
   getGamesByPlayerId,
-} from '@/accessors/getCurrentUser';
+} from '@/accessors/prsimaAccessors';
 import { Card, CardContent } from '@/components/ui';
+import DisplayGames from '@/components/DisplayGames';
 
 import Header from '@/components/Header';
 
@@ -14,38 +15,38 @@ export default async function Page({
   const { username } = params;
   const profileUser = await getUserById(username);
   const user = await getCurrentUser();
-  const games = await getGamesByPlayerId(username);
+  let gamesByProfile = await getGamesByPlayerId(username);
 
-  if (!user || !user.image) {
+  if (!user || !profileUser) {
     //redirect to error page
     console.log('user not found');
     // redirect('/404');
     return;
   }
-  console.log(user);
 
   console.log(user);
   return (
     <div>
       <Header userImg={user.image!} userId={user.id} />
-
-      <h2>{user.email}</h2>
-      <Card>
-        <CardContent>
-          hello
-          <div>
-            {games.map((game) => (
-              <div key={game.id}>
-                {game.moves}
-                {game.msgs}
-
-                <h3>{game.winnerId}</h3>
-                <h3>{game.loserId}</h3>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col sm:flex-row justify-between sm:space-x-4 ">
+        <Card id="profile" className="w-full sm:w-1/3">
+          <CardContent>
+            <h1>User Profile</h1>
+            <p>{profileUser.name}</p>
+            <p>{profileUser.email}</p>
+            <p>{profileUser.bio}</p>
+          </CardContent>
+        </Card>
+        <Card className="w-full sm:w-2/3">
+          <CardContent>
+            <DisplayGames
+              games={gamesByProfile}
+              userId={profileUser.id}
+              username={profileUser.name}
+            />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

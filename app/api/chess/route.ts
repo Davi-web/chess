@@ -57,6 +57,8 @@ export async function POST(req: Request) {
       draw,
       winnerId,
       loserId,
+      winnerName: winner.name,
+      loserName: loser.name,
     },
   });
   // We must now update the elo ratings of players
@@ -77,11 +79,7 @@ export async function POST(req: Request) {
       gamesPlayed: {
         increment: 1,
       },
-      Wins: {
-        connect: {
-          id: game.id,
-        },
-      },
+
       rating: winnerNewRating,
     },
   });
@@ -96,12 +94,6 @@ export async function POST(req: Request) {
       },
       gamesPlayed: {
         increment: 1,
-      },
-
-      Losses: {
-        connect: {
-          id: game.id,
-        },
       },
       rating: loserNewRating,
     },
