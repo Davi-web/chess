@@ -25,6 +25,7 @@ import CustomDialogModal from '@/components/modals/customDialogModal';
 import useCustomDialogModal from '@/zustand/useCustomDialogModal';
 import PlayerTurnTimer from '@/components/PlayerTurnTimer';
 import axios from 'axios';
+import { Slider } from '@/components/ui/slider';
 
 interface GameProps {
   players: Player[];
@@ -55,7 +56,6 @@ interface History {
   fen: string;
   msg: string;
 }
-const TIME_TOTAL = 30; // 1 minute
 const mapSymbolToPiece = (symbol: PieceSymbol) => {
   switch (symbol) {
     case 'p':
@@ -98,7 +98,7 @@ const Game: React.FC<GameProps> = ({
   const [p1TimeRemaining, setP1TimeRemaining] = useState(100);
   const [p2TimeRemaining, setP2TimeRemaining] = useState(100);
   const modal = useCustomDialogModal();
-  const [showAnimation, setShowAnimation] = useState(false);
+  const [timeTotal, setTimeTotal] = useState(15);
 
   const makeAMove = useCallback(
     (moveData: {
@@ -428,10 +428,11 @@ const Game: React.FC<GameProps> = ({
           players[0].id,
           players[1].id,
           chess.turn(),
-          (p1time: number, p2time: number) => {
+          (p1time: number, p2time: number, timeTotal: number) => {
             console.log('get time remaining callback', p1time, p2time);
             setP1TimeRemaining(p1time);
             setP2TimeRemaining(p2time);
+            setTimeTotal(timeTotal / 1000);
           }
         );
         return () => {
@@ -505,7 +506,7 @@ const Game: React.FC<GameProps> = ({
   }, [history, players]);
 
   useEffect(() => {
-    if (over) {
+    if (over && orientation[0] === 'w') {
       const winner = over.includes('white') ? players[0].id : players[1].id;
       // only post if you are the winner
       if (winner === players.find((p) => p.username === username)?.id) {
@@ -525,21 +526,8 @@ const Game: React.FC<GameProps> = ({
       }
     }
   }, [over]);
+  console.log(timeTotal);
 
-  // useEffect(() => {
-  //   // Set up event listener for 'timeRemaining' event emitted by the server
-  //   const handleTimeRemaining = (remaining: number) => {
-  //     setTimeRemaining(remaining);
-  //   };
-  //   socket.on('timeRemaining', handleTimeRemaining);
-
-  //   // Clean up event listener when component unmounts
-  //   return () => {
-  //     socket.off('timeRemaining', handleTimeRemaining);
-  //   };
-  // }, [timeRemaining]); // Empty dependency array ensures this effect runs only once, like componentDidMount
-
-  // Game component returned jsx
   return (
     <div className="h-full w-full overflow-clip">
       <Card>
@@ -579,7 +567,7 @@ const Game: React.FC<GameProps> = ({
                     ? p2TimeRemaining
                     : p1TimeRemaining
                 }
-                timeTotal={TIME_TOTAL}
+                timeTotal={timeTotal}
               />
             </CardContent>
           </Card>
@@ -609,21 +597,6 @@ const Game: React.FC<GameProps> = ({
             showPromotionDialog={showPromotionDialog}
           />
         </div>
-
-        {/* <div
-          id="history"
-          className="w-88 sm:w-96 h-32 sm:h-5/6 space-y-2 overflow-y-scroll"
-        >
-          {history.map((h, i) => (
-            <Card key={i} className="h-fit w-full">
-              <CardContent className="flex justify-center p-3">
-                <CardDescription>
-                  Move {i}: {h.msg}
-                </CardDescription>
-              </CardContent>
-            </Card>
-          ))}
-        </div> */}
       </div>
       <CustomDialogModal
         modal={modal}

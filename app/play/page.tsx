@@ -1,9 +1,10 @@
 import PlayButton from '@/components/buttons/PlayButton';
 import { OpponentType } from '@/enums';
-import getCurrentUser from '@/accessors/prsimaAccessors';
+import getCurrentUser from '@/accessors/prismaAccessors';
 import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { signIn, signOut } from 'next-auth/react';
+import Header from '@/components/Header';
 const labels = {
   friends: 'Play with Friends',
   computer: 'Play with a Computer',
@@ -11,13 +12,14 @@ const labels = {
 };
 const Page = async () => {
   const user = await getCurrentUser();
-  //   if (!user) {
-  //     redirect('/api/auth/signin');
-  //   }
+  if (!user) {
+    redirect('/api/auth/signin');
+  }
   console.log(user);
 
   return (
     <div className="h-screen">
+      <Header userImg={user.image || ''} userId={user.id} />
       <h1 className="text-4xl font-bold text-center mt-14">Chess</h1>
       <div className="flex flex-col items-center space-y-2 h-full justify-center">
         <PlayButton
