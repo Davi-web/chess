@@ -52,19 +52,25 @@ const DisplayGames: React.FC<DisplayGamesProps> = ({
               className="md:basis-1/2 lg:basis-1/3 cursor-pointer min-w-64"
               onClick={() => router.push(`/game/${game.id}`)}
             >
-              <Card>
+              <Card className="group">
                 <p className="text-lg text-green-500 text-center">
                   Game: {i + 1}
                 </p>
-                <p className="text-xs text-green-300 text-center">
-                  {game.winnerName} vs {game.loserName}
+                <p className="text-xs text-primary font-bold group-hover:text-yellow-300 group-hover:animate-ping text-center">
+                  <span className="group-hover:text-green-500 text-lg">
+                    {game.winnerName}
+                  </span>
+                  vs
+                  <span className="group-hover:text-red-500 text-lg">
+                    {game.loserName}
+                  </span>
                 </p>
                 <p className="text-xs text-green-300 text-center">
                   {userId === game.winnerId ? game.winnerName : game.loserName}{' '}
                   {game.winnerId === userId ? 'Won' : 'Lost'} against{' '}
                   {game.winnerId === userId ? game.loserName : game.winnerName}
                 </p>
-                <CardContent className="flex aspect-square items-center justify-center p-6">
+                <CardContent className="flex aspect-square items-center justify-center p-6 cursor-default">
                   <Chessboard position={game.moves[game.moves.length - 1]} />
                 </CardContent>
               </Card>

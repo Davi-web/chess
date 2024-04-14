@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui';
 import { signOut } from 'next-auth/react';
-import { navigate } from '@/accessors/actions';
+import { navigate } from '@/app/accessors/actions';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 interface HeaderProps {

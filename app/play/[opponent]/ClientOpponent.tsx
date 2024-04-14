@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { signIn, signOut } from 'next-auth/react';
 import { User } from '@prisma/client';
 import { OpponentType } from '@/enums';
-import { getUserById } from '@/accessors/prsimaAccessors';
 interface ClientOpponentProps {
   user: User;
   opponent: OpponentType;

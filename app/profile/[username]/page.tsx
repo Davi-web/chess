@@ -1,7 +1,7 @@
 import getCurrentUser, {
   getUserById,
   getGamesByPlayerId,
-} from '@/accessors/prsimaAccessors';
+} from '@/accessors/prismaAccessors';
 import { Card, CardContent } from '@/components/ui';
 import DisplayGames from '@/components/DisplayGames';
 
@@ -26,9 +26,9 @@ export default async function Page({
 
   console.log(user);
   return (
-    <div>
+    <div className="bg-secondary w-screen h-screen">
       <Header userImg={user.image!} userId={user.id} />
-      <div className="flex flex-col sm:flex-row justify-between sm:space-x-4 ">
+      <div className="flex flex-col sm:flex-row justify-between sm:space-x-4">
         <Card id="profile" className="w-full sm:w-1/3">
           <CardContent>
             <h1>User Profile</h1>

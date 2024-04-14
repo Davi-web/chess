@@ -2,7 +2,7 @@ import getCurrentUser, {
   getUserById,
   getGamesByPlayerId,
   getGameById,
-} from '@/accessors/prsimaAccessors';
+} from '@/accessors/prismaAccessors';
 import { Card, CardContent } from '@/components/ui';
 import GameFreePlay from '@/components/GameFreePlay';
 

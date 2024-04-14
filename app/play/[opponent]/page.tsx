@@ -1,4 +1,4 @@
-import getCurrentUser from '@/accessors/prsimaAccessors';
+import getCurrentUser from '@/accessors/prismaAccessors';
 import ClientOpponent from './ClientOpponent';
 import { redirect } from 'next/navigation';
 import { getSession } from 'next-auth/react';

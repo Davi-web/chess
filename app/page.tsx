@@ -1,7 +1,7 @@
 import PlayButton from '@/components/buttons/PlayButton';
 import { OpponentType } from '@/enums';
 import { options } from './api/auth/[...nextauth]/options';
-import getCurrentUser, { getSession } from '../accessors/prsimaAccessors';
+import getCurrentUser, { getSession } from '../accessors/prismaAccessors';
 
 export interface Player {
   id: string;
