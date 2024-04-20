@@ -22,6 +22,7 @@ export default function InitGame({
 }: InitGameProps) {
   const modal = useCustomDialogModal();
   const timerModal = useTimerModal();
+  // const errorModal = useErrorModal();
   const [roomInput, setRoomInput] = useState(''); // input state
   const [roomError, setRoomError] = useState('');
   const [timeTotal, setTimeTotal] = useState(10);
@@ -66,7 +67,7 @@ export default function InitGame({
         handleContinue={startGame}
       >
         <div className="w-full">
-          <h1 className="text-center text-lg font-bold">{timeTotal}</h1>
+          <h1 className="text-center text-lg font-bold">{timeTotal} seconds</h1>
           <Slider
             min={10}
             max={30}

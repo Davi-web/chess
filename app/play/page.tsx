@@ -18,7 +18,7 @@ const Page = async () => {
   console.log(user);
 
   return (
-    <div className="h-screen">
+    <div className="h-screen bg-secondary">
       <Header userImg={user.image || ''} userId={user.id} />
       <h1 className="text-4xl font-bold text-center mt-14">Chess</h1>
       <div className="flex flex-col items-center space-y-2 h-full justify-center">

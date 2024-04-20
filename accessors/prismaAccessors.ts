@@ -58,3 +58,7 @@ export function getGameById(gameId: string) {
     },
   });
 }
+
+export function getAllGames() {
+  return prisma.game.findMany();
+}

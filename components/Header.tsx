@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui';
 import { signOut } from 'next-auth/react';
-import { navigate } from '@/app/accessors/actions';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 interface HeaderProps {
@@ -52,9 +51,7 @@ const Header: React.FC<HeaderProps> = ({ userImg, userId }) => {
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() =>
-              router.push(
-                'https://github.com/Davi-web/chess-frontend/issues/new'
-              )
+              router.push('https://github.com/Davi-web/chess/issues/new/choose')
             }
           >
             Support

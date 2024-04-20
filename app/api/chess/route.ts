@@ -9,12 +9,14 @@ export async function POST(req: Request) {
     result,
     playerIds,
     draw,
+    imageSrc,
   }: {
     moves: string[];
     msgs: string[];
     result: string;
     playerIds: string[];
     draw: boolean;
+    imageSrc: string;
   } = body;
   console.log(' creating new game', moves, result, msgs, playerIds, draw);
 
@@ -59,6 +61,7 @@ export async function POST(req: Request) {
       loserId,
       winnerName: winner.name,
       loserName: loser.name,
+      imageSrc,
     },
   });
   // We must now update the elo ratings of players

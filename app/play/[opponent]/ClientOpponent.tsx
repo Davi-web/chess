@@ -47,7 +47,7 @@ export default function ClientOpponent({
   }, []);
 
   return (
-    <div className="w-full h-full overflow-y-clip">
+    <div className="w-full h-full overflow-y-clip bg-secondary">
       {/* <Button
         onClick={() => {
           signIn();
