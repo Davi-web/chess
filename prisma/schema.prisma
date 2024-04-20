@@ -67,6 +67,7 @@ model Game {
   moves     String[]
   msgs      String[]
   result    String
+  imageSrc  String
 
   winnerId   String? @db.ObjectId
   winnerName String?

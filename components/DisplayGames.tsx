@@ -1,6 +1,5 @@
 'use client';
 import { Game } from '@prisma/client';
-import { Chessboard } from 'react-chessboard';
 import {
   Carousel,
   CarouselContent,
@@ -10,6 +9,7 @@ import {
 } from '@/components/ui/carousel';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface DisplayGamesProps {
   games: Game[];
@@ -71,7 +71,12 @@ const DisplayGames: React.FC<DisplayGamesProps> = ({
                   {game.winnerId === userId ? game.loserName : game.winnerName}
                 </p>
                 <CardContent className="flex aspect-square items-center justify-center p-6 cursor-default">
-                  <Chessboard position={game.moves[game.moves.length - 1]} />
+                  <Image
+                    src={game.imageSrc}
+                    alt="Game Image"
+                    width={200}
+                    height={200}
+                  />
                 </CardContent>
               </Card>
             </CarouselItem>

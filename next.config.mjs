@@ -10,6 +10,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'chess-david.s3.us-west-1.amazonaws.com',
+      },
     ],
   },
 };

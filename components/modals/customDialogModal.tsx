@@ -36,8 +36,10 @@ const CustomDialogModal: React.FC<CustomDialogModalProps> = ({
           {contentText}
         </DialogDescription>
         {children} {/* Other content */}
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleContinue}>Continue</Button>
+        <div className="flex justify-center space-x-4">
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleContinue}>Continue</Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -6,7 +6,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess, Color, Move, Square, Piece, PieceSymbol } from 'chess.js';
 import socket from './socket';
@@ -25,7 +31,7 @@ import CustomDialogModal from '@/components/modals/customDialogModal';
 import useCustomDialogModal from '@/zustand/useCustomDialogModal';
 import PlayerTurnTimer from '@/components/PlayerTurnTimer';
 import axios from 'axios';
-import { Slider } from '@/components/ui/slider';
+import domtoimage from 'dom-to-image';
 
 interface GameProps {
   players: Player[];
@@ -99,6 +105,7 @@ const Game: React.FC<GameProps> = ({
   const [p2TimeRemaining, setP2TimeRemaining] = useState(100);
   const modal = useCustomDialogModal();
   const [timeTotal, setTimeTotal] = useState(15);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   const makeAMove = useCallback(
     (moveData: {
@@ -375,6 +382,81 @@ const Game: React.FC<GameProps> = ({
     window.location.reload();
   }
 
+  const takeScreenshot = (node: HTMLDivElement) => {
+    if (!node) return null;
+    // try {
+    //   const dataUrl = await domtoimage.toPng(node);
+    //   console.log('dom', dataUrl);
+    //   let file = new File([dataUrl], fen as string, {
+    //     type: 'image/png',
+    //   });
+    //   console.log('file', file);
+    //   return file;
+    // } catch (e) {
+    //   console.log(`something went wrong for screenshot`, e);
+    // }
+    const dataUrl = domtoimage
+      .toPng(node)
+      .then(function (dataUrl) {
+        // var img = new Image();
+        // img.src = dataUrl;
+        console.log('dataUrl', dataUrl);
+        const file = dataURLtoFile(dataUrl, fen as string);
+        const formData = new FormData();
+        formData.append('file', file);
+        axios
+          .post('/api/upload-image', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+            transformRequest: (data) => {
+              return data;
+            },
+          })
+          .then((res) => {
+            console.log('upload-image cb', res.data);
+            const url =
+              'https://chess-david.s3.us-west-1.amazonaws.com/' +
+              res.data.fileName;
+
+            const postData = {
+              moves: history.map((h) => h.fen),
+              msgs: history.map((h) => h.msg),
+              result: over,
+              playerIds: players.map((p) => p.id),
+              draw: over === 'Draw',
+              imageSrc: url,
+            };
+            console.log('posting data', postData);
+
+            axios
+              .post('/api/chess', postData)
+              .then((res) => console.log(res.data))
+              .catch((e) => console.log(e));
+          })
+          .catch((e) => console.log(e));
+
+        return dataUrl;
+
+        // saveAs(dataUrl, fen as string);
+      })
+      .catch((e) => console.log(e));
+    return dataUrl;
+  };
+  function dataURLtoFile(dataUrl: string, filename: string) {
+    let arr = dataUrl.split(','),
+      mime = arr[0].match(/:(.*?);/)?.[1],
+      bstr = atob(arr[1]),
+      n = bstr.length,
+      u8arr = new Uint8Array(n);
+
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    return new File([u8arr], filename, { type: mime });
+  }
+
   useEffect(() => {
     socket.on('move', (move) => {
       console.log('opponent move', move);
@@ -482,7 +564,7 @@ const Game: React.FC<GameProps> = ({
           setP2TimeRemaining(p2time);
         }
       );
-    }, 1000);
+    }, 500);
     return () => clearInterval(interval);
   }, [players, chess, roomId, modal, over, fen]);
   useEffect(() => {
@@ -510,22 +592,13 @@ const Game: React.FC<GameProps> = ({
       const winner = over.includes('white') ? players[0].id : players[1].id;
       // only post if you are the winner
       if (winner === players.find((p) => p.username === username)?.id) {
-        const postData = {
-          moves: history.map((h) => h.fen),
-          msgs: history.map((h) => h.msg),
-          result: over,
-          playerIds: players.map((p) => p.id),
-          draw: over === 'Draw',
-        };
-        console.log('posting data', postData);
-
-        axios
-          .post('/api/chess', postData)
-          .then((res) => console.log(res.data))
-          .catch((e) => console.log(e));
+        // take screenshot
+        const dataUrl = takeScreenshot(canvasRef.current!);
+        console.log('dataurl', dataUrl);
       }
     }
-  }, [over]);
+  }, [over, canvasRef]);
+
   console.log(timeTotal);
 
   return (
@@ -547,13 +620,13 @@ const Game: React.FC<GameProps> = ({
       </Card>
       <div className="sm:pt-2 flex flex-col w-full  sm:flex-row">
         {players.length > 1 && (
-          <Card className="h-full justify-center flex w-88 sm:w-96  m-2">
-            <CardContent>
+          <Card className="h-full w-88 sm:w-96  m-2">
+            <CardHeader>
               <CardTitle>
                 {chess.turn() === orientation[0] ? 'Your' : 'Opponent'} Turn
               </CardTitle>
-
-              <CardDescription>Players</CardDescription>
+            </CardHeader>
+            <CardContent>
               <PlayerTurnTimer
                 p1={currUserId === players[0].id ? players[0] : players[1]}
                 p2={currUserId === players[0].id ? players[1] : players[0]}
@@ -573,29 +646,33 @@ const Game: React.FC<GameProps> = ({
           </Card>
         )}
         <div className="w-88 h-88 sm:w-[600px] sm:h-[600px] flex m-2">
-          <Chessboard
-            position={fen}
-            onPieceDrop={onDrop}
-            onPieceDragBegin={onPieceDragBegin}
-            boardOrientation={orientation}
-            onPieceDragEnd={onPieceDragEnd}
-            arePiecesDraggable={true}
-            areArrowsAllowed={false}
-            arePremovesAllowed={true}
-            onSquareClick={onSquareclick}
-            onPromotionPieceSelect={moveTo ? onPromotionPieceSelect : undefined}
-            customBoardStyle={{
-              borderRadius: '4px',
-              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
-            }}
-            customSquareStyles={{
-              ...optionSquares,
-              ...rightClickedSquares,
-              ...kingCheck,
-            }}
-            promotionToSquare={moveTo}
-            showPromotionDialog={showPromotionDialog}
-          />
+          <div className="w-full h-full" ref={canvasRef}>
+            <Chessboard
+              position={fen}
+              onPieceDrop={onDrop}
+              onPieceDragBegin={onPieceDragBegin}
+              boardOrientation={orientation}
+              onPieceDragEnd={onPieceDragEnd}
+              arePiecesDraggable={true}
+              areArrowsAllowed={false}
+              arePremovesAllowed={true}
+              onSquareClick={onSquareclick}
+              onPromotionPieceSelect={
+                moveTo ? onPromotionPieceSelect : undefined
+              }
+              customBoardStyle={{
+                borderRadius: '4px',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+              }}
+              customSquareStyles={{
+                ...optionSquares,
+                ...rightClickedSquares,
+                ...kingCheck,
+              }}
+              promotionToSquare={moveTo}
+              showPromotionDialog={showPromotionDialog}
+            />
+          </div>
         </div>
       </div>
       <CustomDialogModal
